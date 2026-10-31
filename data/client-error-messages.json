@@ -1,0 +1,28 @@
+{
+  "_comment": "客户端常见报错对照表。措辞因客户端和版本而异，判断时看关键词即可。字段与 client-error-messages.csv 一一对应。许可：CC BY 4.0。",
+  "version": "2026-10-05",
+  "items": [
+    { "keywords": ["i/o timeout", "context deadline exceeded", "timeout"], "category": "超时", "meaning": "连接超时，一直没等到对方回应", "first_checks": ["本地网络是否正常", "节点是否暂时不可达", "换同地区其他节点"], "note": "所有节点都超时多半是本地网络、系统时间或订阅过期" },
+    { "keywords": ["connection refused"], "category": "拒绝连接", "meaning": "对方明确拒绝了连接", "first_checks": ["节点端口可能已关闭或变更", "更新订阅后重试"], "note": "" },
+    { "keywords": ["no such host", "lookup failed", "dns resolve failed"], "category": "域名解析", "meaning": "域名解析失败，找不到对应 IP", "first_checks": ["本地 DNS 是否异常", "订阅里的节点域名能否解析", "让客户端先能访问订阅地址"], "note": "" },
+    { "keywords": ["x509: certificate", "certificate has expired", "证书错误"], "category": "证书", "meaning": "证书校验失败", "first_checks": ["先校准系统时间", "确认不是被网络干扰", "不要忽略证书警告"], "note": "最常见原因是系统时间不对" },
+    { "keywords": ["tls: handshake failure", "handshake timeout"], "category": "TLS 握手", "meaning": "TLS 握手没成功", "first_checks": ["换节点或换协议", "检查客户端版本", "排除网络干扰"], "note": "" },
+    { "keywords": ["EOF", "unexpected EOF", "connection reset"], "category": "连接中断", "meaning": "连接被中途断开或重置", "first_checks": ["节点不稳定或网络被重置", "换节点并多观察几次"], "note": "" },
+    { "keywords": ["unsupported proxy type", "unknown proxy type"], "category": "协议不匹配", "meaning": "客户端内核不支持节点用的协议", "first_checks": ["升级客户端", "换支持该协议的内核"], "note": "" },
+    { "keywords": ["yaml: unmarshal errors", "parse failed", "profile parse failed"], "category": "配置解析", "meaning": "配置格式不对，解析失败", "first_checks": ["订阅内容是否完整", "格式是否与客户端兼容"], "note": "" },
+    { "keywords": ["订阅更新 401", "订阅更新 403"], "category": "订阅权限", "meaning": "没有权限或链接被拒绝", "first_checks": ["链接是否完整", "是否被重置或封禁", "联系客服"], "note": "" },
+    { "keywords": ["订阅更新 404"], "category": "订阅失效", "meaning": "找不到这个订阅地址", "first_checks": ["链接是否已失效、是否复制错误", "重新获取"], "note": "" },
+    { "keywords": ["429", "too many requests"], "category": "更新频率", "meaning": "更新太频繁被限制", "first_checks": ["稍等一段时间再更新", "不要反复点击"], "note": "" },
+    { "keywords": ["network is unreachable", "no route to host"], "category": "本地网络", "meaning": "本地网络本身不通", "first_checks": ["先排查本机网络、Wi-Fi、路由器"], "note": "" }
+  ],
+  "general_order": [
+    "先不开代理，确认本机能正常上网",
+    "校准系统时间",
+    "更新订阅，确认节点列表正常",
+    "升级客户端到较新版本",
+    "换一个节点（同地区再试一个）",
+    "换协议或换模式（规则 / 全局）",
+    "重启客户端和设备",
+    "仍然不行，联系服务商客服并附上报错原文（遮住订阅链接）"
+  ]
+}

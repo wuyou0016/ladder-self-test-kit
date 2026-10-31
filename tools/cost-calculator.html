@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>流量成本换算器（离线）</title>
+<style>
+  :root { --bg:#f5f7fb; --card:#fff; --ink:#0d1b2e; --muted:#566780; --line:#d3dbe8; --brand:#1459d9; --amber:#ffb81f; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#08111f; --card:#0f1b2f; --ink:#e8eef8; --muted:#93a3bd; --line:#26374f; --brand:#6ea2ff; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.7 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 28px 18px 60px; }
+  h1 { font-size: 1.6rem; margin: 0 0 6px; }
+  p.lead { color: var(--muted); margin: 0 0 22px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+  @media (max-width: 680px) { .grid { grid-template-columns: 1fr; } }
+  form, .out { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+  label { display: block; font-weight: 700; font-size: .85rem; margin: 12px 0 4px; }
+  input, select { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--ink); font: inherit; }
+  .out { background: #0a1a33; color: #e7eefa; border-color: #264574; }
+  .out dt { font: 600 .7rem/1 ui-monospace,Consolas,monospace; letter-spacing: .12em; color: #93a8c9; margin-top: 12px; }
+  .out dd { margin: 3px 0 0; font: 800 1.45rem/1.25 ui-monospace,Consolas,monospace; color: var(--amber); }
+  .out small { color: #93a8c9; }
+  .hint { color: var(--muted); font-size: .85rem; margin-top: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>流量成本换算器</h1>
+  <p class="lead">把“看起来划算”换算成“每月花多少、够不够用”。只用于换算你自己正在考虑的套餐，不用于品牌之间的排名。所有计算都在你的浏览器里完成，不联网。</p>
+  <div class="grid">
+    <form id="f" onsubmit="return false">
+      <label for="price">套餐价格（元）</label>
+      <input id="price" type="number" min="0" step="0.1" value="84" />
+      <label for="period">计费周期</label>
+      <select id="period">
+        <option value="1">月付（1 个月）</option>
+        <option value="3">季付（3 个月）</option>
+        <option value="6">半年付（6 个月）</option>
+        <option value="12" selected>年付（12 个月）</option>
+      </select>
+      <label for="flow">整个周期的总流量（GB）</label>
+      <input id="flow" type="number" min="0" step="1" value="600" />
+      <label for="mult">你常用节点的平均倍率</label>
+      <input id="mult" type="number" min="0.1" step="0.1" value="1" />
+      <label for="usage">你预计每月用多少 GB</label>
+      <input id="usage" type="number" min="0" step="1" value="30" />
+      <p class="hint">示例数值仅为演示，请改成你自己的套餐。</p>
+    </form>
+    <div class="out" aria-live="polite">
+      <dl style="margin:0">
+        <dt>折算每月成本</dt><dd id="o-month">—</dd>
+        <dt>一次性预付</dt><dd id="o-upfront">—</dd>
+        <dt>实际可用流量（除以倍率）</dt><dd id="o-eff">—</dd>
+        <dt>实际每 GB 成本</dt><dd id="o-gb">—</dd>
+        <dt>按你的月用量，能撑多久</dt><dd id="o-last">—</dd>
+        <small id="o-note"></small>
+      </dl>
+    </div>
+  </div>
+  <p class="hint">说明：倍率为 2 表示用 1GB 扣 2GB；不确定就填 1。年付折算价不能和月付价直接比较——年付要一次性预付，并承担服务商跑路或体验不佳的风险。</p>
+</main>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const fmt = (n, d = 2) => (Number.isFinite(n) ? n.toFixed(d).replace(/\.?0+$/, '') : '—');
+  function calc() {
+    const price = +$('price').value, months = +$('period').value, flow = +$('flow').value;
+    const mult = Math.max(+$('mult').value || 1, 0.1), usage = +$('usage').value;
+    const eff = flow / mult;
+    $('o-month').textContent = '¥' + fmt(price / months) + ' / 月';
+    $('o-upfront').textContent = '¥' + fmt(price);
+    $('o-eff').textContent = fmt(eff, 1) + ' GB';
+    $('o-gb').textContent = eff > 0 ? '¥' + fmt(price / eff) + ' / GB' : '—';
+    if (usage > 0 && eff > 0) {
+      const last = eff / usage;
+      $('o-last').textContent = '约 ' + fmt(last, 1) + ' 个月';
+      $('o-note').textContent = last < months ? '不足整个周期（' + months + ' 个月），中途可能需要加购或重置流量。' : '足够覆盖整个周期。';
+    } else { $('o-last').textContent = '—'; $('o-note').textContent = ''; }
+  }
+  document.querySelectorAll('#f input, #f select').forEach((el) => el.addEventListener('input', calc));
+  calc();
+</script>
+</body>
+</html>
